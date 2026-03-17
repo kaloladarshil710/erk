@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elements of Robots & Kinematics — GTU Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #050a14;
+  --surface: #0d1626;
+  --surface2: #132035;
+  --accent: #00e5ff;
+  --accent2: #7b5ea7;
+  --accent3: #ff6b35;
+  --gold: #ffd166;
+  --text: #e8edf5;
+  --muted: #7a8ba3;
+  --border: rgba(0,229,255,0.15);
+  --glow: 0 0 30px rgba(0,229,255,0.2);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden;cursor:none}
+
+/* Custom cursor */
+.cursor{position:fixed;width:12px;height:12px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform 0.1s,width 0.3s,height 0.3s;mix-blend-mode:screen}
+.cursor-ring{position:fixed;width:36px;height:36px;border:1.5px solid var(--accent);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:transform 0.15s ease,width 0.3s,height 0.3s,opacity 0.3s;opacity:0.5}
+
+/* Stars background */
+.stars{position:fixed;inset:0;overflow:hidden;z-index:0}
+.star{position:absolute;background:white;border-radius:50%;animation:twinkle var(--d,3s) var(--delay,0s) infinite alternate}
+@keyframes twinkle{0%{opacity:0.1;transform:scale(1)}100%{opacity:0.8;transform:scale(1.3)}}
+
+/* Grid lines */
+.grid-bg{position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(0,229,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.03) 1px,transparent 1px);background-size:60px 60px}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);backdrop-filter:blur(20px);background:rgba(5,10,20,0.8)}
+.nav-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--accent);letter-spacing:0.05em;display:flex;align-items:center;gap:8px}
+.nav-logo svg{width:24px;height:24px}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:0.85rem;letter-spacing:0.05em;text-transform:uppercase;transition:color 0.3s;font-family:'Space Mono',monospace}
+.nav-links a:hover{color:var(--accent)}
+.nav-badge{background:rgba(0,229,255,0.1);border:1px solid var(--border);padding:4px 12px;border-radius:20px;font-size:0.75rem;color:var(--accent);font-family:'Space Mono',monospace}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;padding:6rem 2rem 4rem;text-align:center;overflow:hidden}
+.hero-content{position:relative;z-index:2;max-width:900px}
+.hero-eyebrow{font-family:'Space Mono',monospace;font-size:0.75rem;letter-spacing:0.2em;color:var(--accent);text-transform:uppercase;margin-bottom:1.5rem;opacity:0;animation:fadeUp 0.8s 0.3s forwards}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(2.8rem,7vw,5.5rem);font-weight:800;line-height:1.05;margin-bottom:1.5rem;opacity:0;animation:fadeUp 0.8s 0.5s forwards}
+.hero h1 .highlight{color:var(--accent);position:relative;display:inline-block}
+.hero h1 .highlight::after{content:'';position:absolute;bottom:-4px;left:0;right:0;height:3px;background:var(--accent);transform:scaleX(0);animation:scaleIn 0.6s 1.5s forwards}
+@keyframes scaleIn{to{transform:scaleX(1)}}
+.hero-desc{font-size:1.1rem;color:var(--muted);max-width:600px;margin:0 auto 2.5rem;line-height:1.8;opacity:0;animation:fadeUp 0.8s 0.7s forwards}
+.hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;opacity:0;animation:fadeUp 0.8s 0.9s forwards}
+.btn-primary{background:var(--accent);color:#050a14;padding:0.8rem 2rem;border-radius:4px;font-family:'Syne',sans-serif;font-weight:700;text-decoration:none;letter-spacing:0.05em;transition:all 0.3s;border:none;cursor:pointer;font-size:0.95rem}
+.btn-primary:hover{box-shadow:0 0 30px rgba(0,229,255,0.5);transform:translateY(-2px)}
+.btn-outline{border:1px solid var(--border);color:var(--text);padding:0.8rem 2rem;border-radius:4px;font-family:'Syne',sans-serif;font-weight:600;text-decoration:none;letter-spacing:0.05em;transition:all 0.3s;cursor:pointer;font-size:0.95rem}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-2px)}
+
+/* Robot SVG Animation */
+.robot-hero{position:absolute;right:-50px;top:50%;transform:translateY(-50%);width:420px;opacity:0.12;animation:float 6s ease-in-out infinite,fadeIn 1s 1s forwards;z-index:1}
+@keyframes float{0%,100%{transform:translateY(-50%)}50%{transform:translateY(calc(-50% - 20px))}}
+@keyframes fadeIn{to{opacity:0.12}}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0)}from{opacity:0;transform:translateY(30px)}}
+
+/* Stats */
+.stats-row{display:flex;gap:2rem;justify-content:center;flex-wrap:wrap;padding:3rem 2rem;position:relative;z-index:2;opacity:0;animation:fadeUp 0.8s 1.1s forwards}
+.stat-card{text-align:center}
+.stat-num{font-family:'Syne',sans-serif;font-size:2.5rem;font-weight:800;color:var(--accent)}
+.stat-label{font-size:0.8rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;font-family:'Space Mono',monospace}
+
+/* CHAPTERS */
+.section{padding:5rem 2rem;position:relative;z-index:2;max-width:1200px;margin:0 auto}
+.section-label{font-family:'Space Mono',monospace;font-size:0.7rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem}
+.section-title{font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,3rem);font-weight:800;margin-bottom:0.5rem}
+.section-sub{color:var(--muted);font-size:1rem;margin-bottom:3rem;max-width:500px;line-height:1.7}
+
+/* Chapter cards */
+.chapter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(350px,1fr));gap:1.5rem}
+.chapter-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:all 0.4s;position:relative;cursor:pointer}
+.chapter-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity 0.4s;border-radius:12px}
+.chapter-card.u1::before{background:linear-gradient(135deg,rgba(0,229,255,0.05),transparent)}
+.chapter-card.u2::before{background:linear-gradient(135deg,rgba(123,94,167,0.08),transparent)}
+.chapter-card.u3::before{background:linear-gradient(135deg,rgba(255,107,53,0.06),transparent)}
+.chapter-card:hover::before{opacity:1}
+.chapter-card:hover{transform:translateY(-6px);border-color:rgba(0,229,255,0.3)}
+.chapter-card.u2:hover{border-color:rgba(123,94,167,0.4)}
+.chapter-card.u3:hover{border-color:rgba(255,107,53,0.35)}
+.chapter-visual{height:200px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.chapter-visual svg{width:100%;height:100%}
+.chapter-body{padding:1.5rem}
+.unit-tag{display:inline-block;font-family:'Space Mono',monospace;font-size:0.65rem;letter-spacing:0.15em;padding:4px 10px;border-radius:3px;margin-bottom:0.75rem;text-transform:uppercase}
+.u1 .unit-tag{background:rgba(0,229,255,0.1);color:var(--accent)}
+.u2 .unit-tag{background:rgba(123,94,167,0.15);color:#b39ddb}
+.u3 .unit-tag{background:rgba(255,107,53,0.12);color:#ff8c5a}
+.chapter-title{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:700;margin-bottom:0.5rem}
+.chapter-desc{color:var(--muted);font-size:0.9rem;line-height:1.7;margin-bottom:1.2rem}
+.chapter-topics{display:flex;flex-wrap:wrap;gap:6px}
+.topic-chip{font-size:0.72rem;padding:4px 10px;border-radius:20px;border:1px solid var(--border);color:var(--muted);font-family:'Space Mono',monospace;transition:all 0.3s}
+.chapter-card:hover .topic-chip{border-color:rgba(0,229,255,0.2);color:var(--text)}
+
+/* CONTENT SECTIONS */
+.content-wrapper{max-width:1200px;margin:0 auto;padding:2rem}
+
+/* Q&A Section */
+.unit-section{padding:4rem 2rem;max-width:1200px;margin:0 auto}
+.unit-header{display:flex;align-items:center;gap:1.5rem;margin-bottom:3rem;padding-bottom:2rem;border-bottom:1px solid var(--border)}
+.unit-icon{width:60px;height:60px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.8rem}
+.unit-icon.i1{background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3)}
+.unit-icon.i2{background:rgba(123,94,167,0.15);border:1px solid rgba(123,94,167,0.3)}
+.unit-icon.i3{background:rgba(255,107,53,0.1);border:1px solid rgba(255,107,53,0.25)}
+.unit-meta h2{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800}
+.unit-meta p{color:var(--muted);font-size:0.9rem;margin-top:4px}
+
+/* Q items */
+.qa-list{display:flex;flex-direction:column;gap:12px}
+.qa-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color 0.3s}
+.qa-item:hover{border-color:rgba(0,229,255,0.25)}
+.qa-q{padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem;cursor:pointer;user-select:none}
+.qa-num{font-family:'Space Mono',monospace;font-size:0.75rem;color:var(--accent);min-width:30px;font-weight:700}
+.qa-text{flex:1;font-size:0.95rem;font-weight:500}
+.qa-badge{font-size:0.65rem;font-family:'Space Mono',monospace;padding:3px 8px;border-radius:3px;white-space:nowrap}
+.badge-imp{background:rgba(255,107,53,0.15);color:#ff8c5a}
+.badge-def{background:rgba(0,229,255,0.1);color:var(--accent)}
+.badge-exp{background:rgba(123,94,167,0.15);color:#b39ddb}
+.qa-arrow{color:var(--muted);transition:transform 0.3s;font-size:0.75rem}
+.qa-answer{max-height:0;overflow:hidden;transition:max-height 0.5s ease,padding 0.3s}
+.qa-answer.open{max-height:600px}
+.qa-inner{padding:0 1.25rem 1.25rem 3.75rem;color:var(--muted);font-size:0.9rem;line-height:1.9;border-top:1px solid var(--border)}
+.qa-inner b{color:var(--text)}
+.qa-inner table{width:100%;border-collapse:collapse;margin-top:0.75rem;font-size:0.82rem}
+.qa-inner th{background:rgba(0,229,255,0.07);color:var(--accent);padding:6px 10px;text-align:left;border:1px solid var(--border)}
+.qa-inner td{padding:6px 10px;border:1px solid var(--border);color:var(--muted)}
+.qa-arrow.open{transform:rotate(180deg)}
+
+/* Diagrams section */
+.diagrams-section{padding:4rem 2rem;max-width:1200px;margin:0 auto}
+.diagram-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem}
+.diagram-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem;transition:all 0.3s}
+.diagram-card:hover{transform:translateY(-4px);border-color:rgba(0,229,255,0.3);box-shadow:var(--glow)}
+.diagram-title{font-family:'Syne',sans-serif;font-weight:700;margin-bottom:1rem;font-size:1rem;color:var(--accent)}
+.diagram-card svg{width:100%;display:block}
+
+/* Comparison table */
+.compare-section{padding:3rem 2rem;max-width:1200px;margin:0 auto}
+.compare-table{width:100%;border-collapse:collapse;border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+.compare-table th{background:var(--surface2);padding:1rem;font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;letter-spacing:0.05em;text-align:left}
+.compare-table th:first-child{color:var(--muted)}
+.compare-table th.col1{color:var(--accent)}
+.compare-table th.col2{color:#b39ddb}
+.compare-table th.col3{color:#ff8c5a}
+.compare-table td{padding:0.85rem 1rem;font-size:0.85rem;border-top:1px solid var(--border);color:var(--muted)}
+.compare-table tr:hover td{background:rgba(255,255,255,0.02);color:var(--text)}
+.compare-table td:first-child{font-family:'Space Mono',monospace;font-size:0.75rem;color:var(--text)}
+
+/* Progress tracker */
+.progress-bar-wrap{position:fixed;top:0;left:0;right:0;height:3px;z-index:200}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width 0.1s}
+
+/* Scroll animations */
+.reveal{opacity:0;transform:translateY(40px);transition:opacity 0.7s ease,transform 0.7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* Footer */
+footer{padding:3rem 2rem;text-align:center;border-top:1px solid var(--border);position:relative;z-index:2}
+footer p{color:var(--muted);font-size:0.8rem;font-family:'Space Mono',monospace}
+
+/* Floating particles */
+.particle{position:fixed;width:4px;height:4px;border-radius:50%;background:var(--accent);pointer-events:none;animation:drift linear infinite;opacity:0;z-index:1}
+@keyframes drift{0%{transform:translateY(100vh) translateX(0);opacity:0}10%{opacity:0.6}90%{opacity:0.3}100%{transform:translateY(-10vh) translateX(var(--dx,50px));opacity:0}}
+
+/* Tooltip key */
+.key-section{padding:2rem;max-width:1200px;margin:0 auto;display:flex;gap:1.5rem;flex-wrap:wrap}
+.key-item{display:flex;align-items:center;gap:8px;font-size:0.8rem;color:var(--muted)}
+.key-dot{width:10px;height:10px;border-radius:2px}
+
+/* Divider */
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:2rem 0;max-width:1200px;margin-left:auto;margin-right:auto}
+
+/* Chapter nav */
+.chapter-nav{display:flex;gap:12px;justify-content:center;padding:2rem;flex-wrap:wrap;position:sticky;top:64px;z-index:50;background:rgba(5,10,20,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.ch-nav-btn{font-family:'Space Mono',monospace;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;padding:6px 16px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all 0.3s}
+.ch-nav-btn:hover,.ch-nav-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,0.07)}
+
+/* Animations for SVG robots */
+@keyframes arm-swing{0%,100%{transform-origin:50% 0%;transform:rotate(-5deg)}50%{transform-origin:50% 0%;transform:rotate(5deg)}}
+@keyframes eye-blink{0%,90%,100%{transform:scaleY(1)}95%{transform:scaleY(0.1)}}
+@keyframes pulse-ring{0%{opacity:0.6;r:8}100%{opacity:0;r:20}}
+@keyframes gear-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes wave{0%,100%{transform:rotate(0deg)}25%{transform:rotate(15deg)}75%{transform:rotate(-15deg)}}
+@keyframes sensor-ping{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(2.5)}}
+</style>
+</head>
+<body>
+
+<!-- Cursor -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- Progress bar -->
+<div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar"></div></div>
+
+<!-- Stars -->
+<div class="stars" id="stars"></div>
+<div class="grid-bg"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M9 8V5M15 8V5M9 14h6M8 2h8"/></svg>
+    RoboKin
+  </div>
+  <ul class="nav-links">
+    <li><a href="#unit1">Unit 1</a></li>
+    <li><a href="#unit2">Unit 2</a></li>
+    <li><a href="#unit3">Unit 3</a></li>
+  </ul>
+  <div class="nav-badge">BE04041011</div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <!-- Decorative robot -->
+  <svg class="robot-hero" viewBox="0 0 300 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="90" y="60" width="120" height="90" rx="16" fill="#00e5ff" opacity="0.3"/>
+    <rect x="110" y="75" width="30" height="20" rx="4" fill="#00e5ff" opacity="0.7"/>
+    <rect x="160" y="75" width="30" height="20" rx="4" fill="#00e5ff" opacity="0.7"/>
+    <rect x="130" y="100" width="40" height="8" rx="4" fill="#00e5ff" opacity="0.5"/>
+    <rect x="70" y="50" width="160" height="10" rx="5" fill="#00e5ff" opacity="0.2"/>
+    <rect x="75" y="150" width="150" height="130" rx="12" fill="#00e5ff" opacity="0.15"/>
+    <rect x="90" y="165" width="50" height="80" rx="6" fill="#00e5ff" opacity="0.2"/>
+    <rect x="160" y="165" width="50" height="80" rx="6" fill="#00e5ff" opacity="0.2"/>
+    <rect x="20" y="160" width="55" height="20" rx="6" fill="#00e5ff" opacity="0.25" style="animation:arm-swing 2s ease-in-out infinite"/>
+    <rect x="225" y="160" width="55" height="20" rx="6" fill="#00e5ff" opacity="0.25"/>
+    <rect x="100" y="280" width="35" height="90" rx="8" fill="#00e5ff" opacity="0.2"/>
+    <rect x="165" y="280" width="35" height="90" rx="8" fill="#00e5ff" opacity="0.2"/>
+  </svg>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">GTU · Bachelor of Engineering · Robotics & Automation</div>
+    <h1>Elements of Robots<br>&amp; <span class="highlight">Kinematics</span></h1>
+    <p class="hero-desc">A complete visual learning guide for all 3 units — from fundamentals to sensors and control. Designed for exam success.</p>
+    <div class="hero-btns">
+      <a href="#unit1" class="btn-primary">Start Learning</a>
+      <a href="#compare" class="btn-outline">View Comparisons</a>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<div class="stats-row">
+  <div class="stat-card"><div class="stat-num">3</div><div class="stat-label">Units</div></div>
+  <div class="stat-card"><div class="stat-num">30+</div><div class="stat-label">Questions</div></div>
+  <div class="stat-card"><div class="stat-num">6</div><div class="stat-label">DOF Topics</div></div>
+  <div class="stat-card"><div class="stat-num">100%</div><div class="stat-label">Exam Ready</div></div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Chapter Overview -->
+<section class="section reveal">
+  <div class="section-label">Course Overview</div>
+  <h2 class="section-title">Three Chapters to Master</h2>
+  <p class="section-sub">Click any chapter card to jump to the full Q&A section below.</p>
+
+  <div class="chapter-grid">
+    <!-- Unit 1 -->
+    <div class="chapter-card u1" onclick="document.getElementById('unit1').scrollIntoView({behavior:'smooth'})">
+      <div class="chapter-visual" style="background:linear-gradient(135deg,#050a14,#0a1f35)">
+        <svg viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg">
+          <!-- Robot illustration unit 1 -->
+          <g transform="translate(80,20)">
+            <!-- Head -->
+            <rect x="50" y="10" width="80" height="60" rx="10" fill="none" stroke="#00e5ff" stroke-width="1.5" opacity="0.8"/>
+            <rect x="60" y="22" width="20" height="15" rx="3" fill="#00e5ff" opacity="0.6">
+              <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite"/>
+            </rect>
+            <rect x="100" y="22" width="20" height="15" rx="3" fill="#00e5ff" opacity="0.6">
+              <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+            </rect>
+            <rect x="70" y="50" width="40" height="6" rx="3" fill="#00e5ff" opacity="0.4"/>
+            <!-- Body -->
+            <rect x="30" y="75" width="120" height="90" rx="8" fill="none" stroke="#00e5ff" stroke-width="1.5" opacity="0.6"/>
+            <!-- Arms -->
+            <rect x="-20" y="85" width="50" height="14" rx="5" fill="none" stroke="#00e5ff" stroke-width="1.5" opacity="0.5">
+              <animateTransform attributeName="transform" type="rotate" values="-5 -20 92;5 -20 92;-5 -20 92" dur="3s" repeatCount="indefinite"/>
+            </rect>
+            <rect x="150" y="85" width="50" height="14" rx="5" fill="none" stroke="#00e5ff" stroke-width="1.5" opacity="0.5">
+              <animateTransform attributeName="transform" type="rotate" values="5 200 92;-5 200 92;5 200 92" dur="3s" repeatCount="indefinite"/>
+            </rect>
+            <!-- Legs -->
+            <rect x="50" y="168" width="30" height="25" rx="5" fill="none" stroke="#00e5ff" stroke-width="1.5" opacity="0.5"/>
+            <rect x="100" y="168" width="30" height="25" rx="5" fill="none" stroke="#00e5ff" stroke-width="1.5" opacity="0.5"/>
+            <!-- DOF labels -->
+            <text x="180" y="40" font-family="monospace" font-size="10" fill="#00e5ff" opacity="0.7">DOF: 6</text>
+            <text x="180" y="55" font-family="monospace" font-size="8" fill="#00e5ff" opacity="0.5">Joints: R,P,S</text>
+          </g>
+          <!-- Coordinate axes -->
+          <g transform="translate(290,140)">
+            <line x1="0" y1="0" x2="40" y2="0" stroke="#00e5ff" stroke-width="1.5" opacity="0.6"/>
+            <line x1="0" y1="0" x2="0" y2="-40" stroke="#7b5ea7" stroke-width="1.5" opacity="0.6"/>
+            <line x1="0" y1="0" x2="-20" y2="20" stroke="#ff6b35" stroke-width="1.5" opacity="0.6"/>
+            <text x="44" y="4" font-family="monospace" font-size="9" fill="#00e5ff">X</text>
+            <text x="-4" y="-43" font-family="monospace" font-size="9" fill="#7b5ea7">Y</text>
+            <text x="-28" y="28" font-family="monospace" font-size="9" fill="#ff6b35">Z</text>
+          </g>
+        </svg>
+      </div>
+      <div class="chapter-body">
+        <div class="unit-tag">Unit 01</div>
+        <div class="chapter-title">Fundamentals of Robotics</div>
+        <div class="chapter-desc">Robot definition, classification, DOF, joints, workspace, coordinate systems, and applications.</div>
+        <div class="chapter-topics">
+          <span class="topic-chip">Definition</span>
+          <span class="topic-chip">DOF</span>
+          <span class="topic-chip">Joints</span>
+          <span class="topic-chip">Workspace</span>
+          <span class="topic-chip">Applications</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Unit 2 -->
+    <div class="chapter-card u2" onclick="document.getElementById('unit2').scrollIntoView({behavior:'smooth'})">
+      <div class="chapter-visual" style="background:linear-gradient(135deg,#050a14,#160d26)">
+        <svg viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg">
+          <!-- Motor/Actuator illustration -->
+          <!-- DC Motor -->
+          <g transform="translate(50,60)">
+            <rect x="0" y="10" width="60" height="80" rx="6" fill="none" stroke="#b39ddb" stroke-width="1.5" opacity="0.8"/>
+            <circle cx="30" cy="50" r="22" fill="none" stroke="#b39ddb" stroke-width="1.5" opacity="0.6"/>
+            <circle cx="30" cy="50" r="10" fill="none" stroke="#b39ddb" stroke-width="1" opacity="0.4"/>
+            <line x1="60" y1="50" x2="90" y2="50" stroke="#b39ddb" stroke-width="2" opacity="0.8"/>
+            <text x="0" y="105" font-family="monospace" font-size="8" fill="#b39ddb" opacity="0.8">DC Motor</text>
+            <!-- Rotation animation -->
+            <g transform-origin="30 50">
+              <line x1="30" y1="50" x2="30" y2="30" stroke="#b39ddb" stroke-width="2" opacity="0.7">
+                <animateTransform attributeName="transform" type="rotate" from="0 30 50" to="360 30 50" dur="2s" repeatCount="indefinite"/>
+              </line>
+            </g>
+          </g>
+          <!-- Hydraulic -->
+          <g transform="translate(145,60)">
+            <rect x="0" y="0" width="40" height="100" rx="4" fill="none" stroke="#7b5ea7" stroke-width="1.5" opacity="0.7"/>
+            <rect x="5" y="30" width="30" height="40" rx="3" fill="#7b5ea7" opacity="0.2">
+              <animate attributeName="y" values="30;10;30" dur="3s" repeatCount="indefinite"/>
+              <animate attributeName="height" values="40;60;40" dur="3s" repeatCount="indefinite"/>
+            </rect>
+            <line x1="20" y1="100" x2="20" y2="130" stroke="#7b5ea7" stroke-width="3" opacity="0.8"/>
+            <text x="-10" y="148" font-family="monospace" font-size="8" fill="#7b5ea7" opacity="0.8">Hydraulic</text>
+          </g>
+          <!-- Gripper -->
+          <g transform="translate(230,40)">
+            <rect x="30" y="0" width="15" height="60" rx="4" fill="none" stroke="#ff8c5a" stroke-width="1.5" opacity="0.7"/>
+            <rect x="10" y="30" width="25" height="12" rx="3" fill="none" stroke="#ff8c5a" stroke-width="1.5" opacity="0.7">
+              <animate attributeName="x" values="10;5;10" dur="2s" repeatCount="indefinite"/>
+            </rect>
+            <rect x="40" y="30" width="25" height="12" rx="3" fill="none" stroke="#ff8c5a" stroke-width="1.5" opacity="0.7">
+              <animate attributeName="x" values="40;45;40" dur="2s" repeatCount="indefinite"/>
+            </rect>
+            <text x="0" y="85" font-family="monospace" font-size="8" fill="#ff8c5a" opacity="0.8">Gripper</text>
+          </g>
+          <!-- Pneumatic -->
+          <g transform="translate(305,50)">
+            <rect x="0" y="0" width="35" height="80" rx="4" fill="none" stroke="#00e5ff" stroke-width="1.5" opacity="0.6"/>
+            <circle cx="17" cy="15" r="6" fill="#00e5ff" opacity="0.3">
+              <animate attributeName="cy" values="15;60;15" dur="1.5s" repeatCount="indefinite"/>
+            </circle>
+            <text x="-5" y="100" font-family="monospace" font-size="8" fill="#00e5ff" opacity="0.6">Pneumatic</text>
+          </g>
+        </svg>
+      </div>
+      <div class="chapter-body">
+        <div class="unit-tag">Unit 02</div>
+        <div class="chapter-title">Actuators &amp; Grippers</div>
+        <div class="chapter-desc">Electric, hydraulic, and pneumatic actuators. Motor selection and gripper design principles.</div>
+        <div class="chapter-topics">
+          <span class="topic-chip">Electric</span>
+          <span class="topic-chip">Hydraulic</span>
+          <span class="topic-chip">Pneumatic</span>
+          <span class="topic-chip">Grippers</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Unit 3 -->
+    <div class="chapter-card u3" onclick="document.getElementById('unit3').scrollIntoView({behavior:'smooth'})">
+      <div class="chapter-visual" style="background:linear-gradient(135deg,#050a14,#1a0a00)">
+        <svg viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg">
+          <!-- Sensor network -->
+          <g transform="translate(30,30)">
+            <!-- Camera/vision -->
+            <rect x="20" y="20" width="50" height="35" rx="5" fill="none" stroke="#ff8c5a" stroke-width="1.5" opacity="0.8"/>
+            <circle cx="45" cy="37" r="10" fill="none" stroke="#ff8c5a" stroke-width="1.5" opacity="0.6"/>
+            <circle cx="45" cy="37" r="4" fill="#ff8c5a" opacity="0.4"/>
+            <text x="15" y="70" font-family="monospace" font-size="8" fill="#ff8c5a" opacity="0.8">Camera</text>
+            <!-- Sensor pings -->
+            <circle cx="45" cy="37" r="15" fill="none" stroke="#ff8c5a" stroke-width="0.5" opacity="0">
+              <animate attributeName="r" values="10;28" dur="2s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0.6;0" dur="2s" repeatCount="indefinite"/>
+            </circle>
+          </g>
+
+          <!-- Controller box -->
+          <g transform="translate(130,65)">
+            <rect x="0" y="0" width="90" height="70" rx="8" fill="none" stroke="#ff8c5a" stroke-width="2" opacity="0.9"/>
+            <rect x="10" y="10" width="70" height="15" rx="3" fill="#ff8c5a" opacity="0.15"/>
+            <rect x="10" y="30" width="40" height="8" rx="2" fill="#ff8c5a" opacity="0.2"/>
+            <rect x="10" y="42" width="55" height="8" rx="2" fill="#ff8c5a" opacity="0.15"/>
+            <text x="18" y="60" font-family="monospace" font-size="9" fill="#ff8c5a" opacity="0.9">CONTROLLER</text>
+          </g>
+
+          <!-- Proximity sensor -->
+          <g transform="translate(258,30)">
+            <rect x="0" y="20" width="40" height="55" rx="5" fill="none" stroke="#ff8c5a" stroke-width="1.5" opacity="0.7"/>
+            <line x1="40" y1="35" x2="80" y2="25" stroke="#ff8c5a" stroke-width="1" stroke-dasharray="4,3" opacity="0.5">
+              <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite"/>
+            </line>
+            <line x1="40" y1="47" x2="80" y2="47" stroke="#ff8c5a" stroke-width="1" stroke-dasharray="4,3" opacity="0.5">
+              <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" begin="0.3s" repeatCount="indefinite"/>
+            </line>
+            <line x1="40" y1="59" x2="80" y2="67" stroke="#ff8c5a" stroke-width="1" stroke-dasharray="4,3" opacity="0.5">
+              <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" begin="0.6s" repeatCount="indefinite"/>
+            </line>
+            <text x="-5" y="90" font-family="monospace" font-size="8" fill="#ff8c5a" opacity="0.7">Proximity</text>
+          </g>
+
+          <!-- Control loop arrow -->
+          <g transform="translate(90,155)">
+            <path d="M0,0 Q90,-30 180,0" fill="none" stroke="#ff8c5a" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.5">
+              <animate attributeName="stroke-dashoffset" values="20;0" dur="2s" repeatCount="indefinite"/>
+            </path>
+            <text x="60" y="-15" font-family="monospace" font-size="8" fill="#ff8c5a" opacity="0.6">Feedback Loop</text>
+          </g>
+        </svg>
+      </div>
+      <div class="chapter-body">
+        <div class="unit-tag">Unit 03</div>
+        <div class="chapter-title">Sensors &amp; Control</div>
+        <div class="chapter-desc">Internal and external sensors, vision systems, signal conditioning, and open/closed-loop control.</div>
+        <div class="chapter-topics">
+          <span class="topic-chip">Sensors</span>
+          <span class="topic-chip">Vision</span>
+          <span class="topic-chip">Controller</span>
+          <span class="topic-chip">Feedback</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Sticky chapter nav -->
+<div class="chapter-nav">
+  <button class="ch-nav-btn active" onclick="scrollTo('unit1',this)">01 — Fundamentals</button>
+  <button class="ch-nav-btn" onclick="scrollTo('unit2',this)">02 — Actuators & Grippers</button>
+  <button class="ch-nav-btn" onclick="scrollTo('unit3',this)">03 — Sensors & Control</button>
+</div>
+
+<!-- ========== UNIT 1 ========== -->
+<section id="unit1" class="unit-section reveal">
+  <div class="unit-header">
+    <div class="unit-icon i1">🤖</div>
+    <div class="unit-meta">
+      <h2>Unit 1: Fundamentals of Robotics</h2>
+      <p>15 questions · Definitions, Classification, DOF, Joints, Workspace, Applications</p>
+    </div>
+  </div>
+
+  <!-- Diagrams -->
+  <div class="diagram-grid" style="margin-bottom:2rem">
+    <div class="diagram-card reveal">
+      <div class="diagram-title">Robot Classification by Structure</div>
+      <svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" style="height:180px">
+        <text x="140" y="18" text-anchor="middle" font-family="'Space Mono',monospace" font-size="9" fill="#00e5ff" opacity="0.7">ROBOT TYPES</text>
+        <!-- Cartesian -->
+        <g transform="translate(10,30)">
+          <rect x="5" y="5" width="35" height="35" rx="3" fill="none" stroke="#00e5ff" stroke-width="1.2" opacity="0.7"/>
+          <line x1="5" y1="22" x2="40" y2="22" stroke="#00e5ff" stroke-width="1" opacity="0.5"/>
+          <line x1="22" y1="5" x2="22" y2="40" stroke="#00e5ff" stroke-width="1" opacity="0.5"/>
+          <text x="22" y="58" text-anchor="middle" font-family="monospace" font-size="7.5" fill="#00e5ff" opacity="0.8">Cartesian</text>
+        </g>
+        <!-- Cylindrical -->
+        <g transform="translate(70,30)">
+          <ellipse cx="20" cy="35" rx="15" ry="5" fill="none" stroke="#7b5ea7" stroke-width="1.2" opacity="0.7"/>
+          <line x1="20" y1="30" x2="20" y2="5" stroke="#7b5ea7" stroke-width="1.5" opacity="0.7"/>
+          <line x1="20" y1="12" x2="38" y2="12" stroke="#7b5ea7" stroke-width="1.5" opacity="0.6"/>
+          <text x="20" y="58" text-anchor="middle" font-family="monospace" font-size="7.5" fill="#7b5ea7" opacity="0.8">Cylindrical</text>
+        </g>
+        <!-- SCARA -->
+        <g transform="translate(130,30)">
+          <circle cx="15" cy="15" r="6" fill="none" stroke="#ff8c5a" stroke-width="1.2" opacity="0.7"/>
+          <line x1="15" y1="15" x2="30" y2="25" stroke="#ff8c5a" stroke-width="1.5" opacity="0.7"/>
+          <line x1="30" y1="25" x2="42" y2="15" stroke="#ff8c5a" stroke-width="1.5" opacity="0.6"/>
+          <circle cx="42" cy="15" r="4" fill="none" stroke="#ff8c5a" stroke-width="1" opacity="0.5"/>
+          <text x="22" y="58" text-anchor="middle" font-family="monospace" font-size="7.5" fill="#ff8c5a" opacity="0.8">SCARA</text>
+        </g>
+        <!-- Articulated -->
+        <g transform="translate(193,25)">
+          <circle cx="12" cy="25" r="5" fill="none" stroke="#ffd166" stroke-width="1.2" opacity="0.7"/>
+          <line x1="12" y1="20" x2="22" y2="8" stroke="#ffd166" stroke-width="1.5" opacity="0.7"/>
+          <circle cx="22" cy="8" r="4" fill="none" stroke="#ffd166" stroke-width="1" opacity="0.6"/>
+          <line x1="22" y1="8" x2="40" y2="18" stroke="#ffd166" stroke-width="1.5" opacity="0.6"/>
+          <circle cx="40" cy="18" r="3" fill="none" stroke="#ffd166" stroke-width="1" opacity="0.5"/>
+          <text x="22" y="58" text-anchor="middle" font-family="monospace" font-size="7.5" fill="#ffd166" opacity="0.8">Articulated</text>
+        </g>
+        <!-- DOF section -->
+        <rect x="10" y="75" width="260" height="92" rx="6" fill="rgba(0,229,255,0.04)" stroke="rgba(0,229,255,0.15)" stroke-width="1"/>
+        <text x="140" y="93" text-anchor="middle" font-family="monospace" font-size="8" fill="#00e5ff" opacity="0.8">DEGREE OF FREEDOM</text>
+        <text x="20" y="112" font-family="monospace" font-size="8" fill="#7a8ba3">• Position (X,Y,Z) → 3 DOF</text>
+        <text x="20" y="127" font-family="monospace" font-size="8" fill="#7a8ba3">• Orientation (Roll,Pitch,Yaw) → 3 DOF</text>
+        <text x="20" y="142" font-family="monospace" font-size="8" fill="#7a8ba3">• Industrial 6-DOF = Position + Orientation</text>
+        <text x="20" y="157" font-family="monospace" font-size="8" fill="#00e5ff" opacity="0.7">Total: 6 DOF for complete spatial motion</text>
+      </svg>
+    </div>
+
+    <div class="diagram-card reveal">
+      <div class="diagram-title">Types of Robot Joints</div>
+      <svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" style="height:180px">
+        <!-- Revolute -->
+        <g transform="translate(15,20)">
+          <rect x="0" y="12" width="35" height="12" rx="3" fill="none" stroke="#00e5ff" stroke-width="1.5" opacity="0.8"/>
+          <circle cx="35" cy="18" r="8" fill="none" stroke="#00e5ff" stroke-width="1.5" opacity="0.7"/>
+          <path d="M35,10 A8,8 0 0,1 43,18" stroke="#00e5ff" fill="none" stroke-width="1" opacity="0.5">
+            <animateTransform attributeName="transform" type="rotate" from="0 35 18" to="360 35 18" dur="4s" repeatCount="indefinite"/>
+          </path>
+          <rect x="43" y="12" width="25" height="12" rx="3" fill="none" stroke="#00e5ff" stroke-width="1.5" opacity="0.5">
+            <animateTransform attributeName="transform" type="rotate" from="0 35 18" to="30 35 18" dur="2s" repeatCount="indefinite" additive="sum"/>
+            <animateTransform attributeName="transform" type="rotate" from="30 35 18" to="0 35 18" dur="2s" begin="2s" repeatCount="indefinite" additive="sum"/>
+          </rect>
+          <text x="35" y="42" text-anchor="middle" font-family="monospace" font-size="8" fill="#00e5ff" opacity="0.8">Revolute (R)</text>
+          <text x="35" y="52" text-anchor="middle" font-family="monospace" font-size="7" fill="#7a8ba3">1 DOF · Rotary</text>
+        </g>
+        <!-- Prismatic -->
+        <g transform="translate(10,80)">
+          <rect x="0" y="8" width="50" height="12" rx="3" fill="none" stroke="#7b5ea7" stroke-width="1.5" opacity="0.8"/>
+          <rect x="50" y="8" width="30" height="12" rx="3" fill="none" stroke="#7b5ea7" stroke-width="1.5" opacity="0.6">
+            <animate attributeName="x" values="50;65;50" dur="2s" repeatCount="indefinite"/>
+          </rect>
+          <line x1="50" y1="14" x2="80" y2="14" stroke="#7b5ea7" stroke-width="0.5" stroke-dasharray="3,2" opacity="0.4"/>
+          <text x="45" y="35" text-anchor="middle" font-family="monospace" font-size="8" fill="#7b5ea7" opacity="0.8">Prismatic (P)</text>
+          <text x="45" y="45" text-anchor="middle" font-family="monospace" font-size="7" fill="#7a8ba3">1 DOF · Linear Slide</text>
+        </g>
+        <!-- Spherical -->
+        <g transform="translate(10,140)">
+          <circle cx="20" cy="10" r="12" fill="none" stroke="#ff8c5a" stroke-width="1.5" opacity="0.7"/>
+          <circle cx="20" cy="10" r="4" fill="#ff8c5a" opacity="0.4"/>
+          <line x1="30" y1="4" x2="48" y2="-2" stroke="#ff8c5a" stroke-width="1.5" opacity="0.6">
+            <animateTransform attributeName="transform" type="rotate" from="0 20 10" to="360 20 10" dur="5s" repeatCount="indefinite"/>
+          </line>
+          <text x="20" y="30" text-anchor="middle" font-family="monospace" font-size="8" fill="#ff8c5a" opacity="0.8">Spherical</text>
+          <text x="20" y="40" text-anchor="middle" font-family="monospace" font-size="7" fill="#7a8ba3">3 DOF</text>
+        </g>
+        <!-- Right side info -->
+        <g transform="translate(145,20)">
+          <rect x="0" y="0" width="120" height="150" rx="6" fill="rgba(0,229,255,0.04)" stroke="rgba(0,229,255,0.12)" stroke-width="1"/>
+          <text x="60" y="18" text-anchor="middle" font-family="monospace" font-size="8" fill="#00e5ff" opacity="0.8">JOINT SUMMARY</text>
+          <text x="10" y="38" font-family="monospace" font-size="7.5" fill="#00e5ff">R</text>
+          <text x="22" y="38" font-family="monospace" font-size="7.5" fill="#7a8ba3">Revolute — 1 DOF</text>
+          <text x="10" y="54" font-family="monospace" font-size="7.5" fill="#7b5ea7">P</text>
+          <text x="22" y="54" font-family="monospace" font-size="7.5" fill="#7a8ba3">Prismatic — 1 DOF</text>
+          <text x="10" y="70" font-family="monospace" font-size="7.5" fill="#ff8c5a">S</text>
+          <text x="22" y="70" font-family="monospace" font-size="7.5" fill="#7a8ba3">Spherical — 3 DOF</text>
+          <text x="10" y="86" font-family="monospace" font-size="7.5" fill="#ffd166">C</text>
+          <text x="22" y="86" font-family="monospace" font-size="7.5" fill="#7a8ba3">Cylindrical — 2 DOF</text>
+          <text x="10" y="102" font-family="monospace" font-size="7.5" fill="#b39ddb">H</text>
+          <text x="22" y="102" font-family="monospace" font-size="7.5" fill="#7a8ba3">Screw/Helical — 1</text>
+          <text x="10" y="118" font-family="monospace" font-size="7.5" fill="#5dcaa5">Pl</text>
+          <text x="22" y="118" font-family="monospace" font-size="7.5" fill="#7a8ba3">Planar — 2 DOF</text>
+          <rect x="8" y="128" width="104" height="14" rx="3" fill="rgba(0,229,255,0.08)"/>
+          <text x="60" y="139" text-anchor="middle" font-family="monospace" font-size="7" fill="#00e5ff">Most used: R and P joints</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <div class="qa-list" id="qa-u1"></div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ========== UNIT 2 ========== -->
+<section id="unit2" class="unit-section reveal">
+  <div class="unit-header">
+    <div class="unit-icon i2">⚙️</div>
+    <div class="unit-meta">
+      <h2>Unit 2: Actuators &amp; Grippers</h2>
+      <p>8 questions · Electric, Hydraulic, Pneumatic, Gripper Types & Design</p>
+    </div>
+  </div>
+
+  <div class="diagram-grid" style="margin-bottom:2rem">
+    <div class="diagram-card reveal">
+      <div class="diagram-title">Actuator Types Overview</div>
+      <svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" style="height:180px">
+        <!-- Electric -->
+        <g transform="translate(10,20)">
+          <rect x="5" y="5" width="70" height="50" rx="5" fill="rgba(0,229,255,0.07)" stroke="#00e5ff" stroke-width="1.5" opacity="0.8"/>
+          <text x="40" y="25" text-anchor="middle" font-family="monospace" font-size="8" fill="#00e5ff" opacity="0.9">ELECTRIC</text>
+          <circle cx="40" cy="40" r="8" fill="none" stroke="#00e5ff" stroke-width="1.2" opacity="0.7">
+            <animateTransform attributeName="transform" type="rotate" from="0 40 40" to="360 40 40" dur="3s" repeatCount="indefinite"/>
+          </circle>
+          <text x="40" y="73" text-anchor="middle" font-family="monospace" font-size="7" fill="#00e5ff" opacity="0.7">Servo / Stepper</text>
+          <text x="40" y="83" text-anchor="middle" font-family="monospace" font-size="7" fill="#7a8ba3">High precision</text>
+        </g>
+        <!-- Hydraulic -->
+        <g transform="translate(100,20)">
+          <rect x="5" y="5" width="70" height="50" rx="5" fill="rgba(123,94,167,0.1)" stroke="#7b5ea7" stroke-width="1.5" opacity="0.8"/>
+          <text x="40" y="25" text-anchor="middle" font-family="monospace" font-size="8" fill="#b39ddb" opacity="0.9">HYDRAULIC</text>
+          <rect x="20" y="28" width="40" height="18" rx="3" fill="none" stroke="#7b5ea7" stroke-width="1.2" opacity="0.7"/>
+          <rect x="25" y="32" width="12" height="10" rx="1" fill="#7b5ea7" opacity="0.4">
+            <animate attributeName="width" values="12;24;12" dur="2s" repeatCount="indefinite"/>
+          </rect>
+          <text x="40" y="73" text-anchor="middle" font-family="monospace" font-size="7" fill="#b39ddb" opacity="0.7">Oil pressure</text>
+          <text x="40" y="83" text-anchor="middle" font-family="monospace" font-size="7" fill="#7a8ba3">Very high force</text>
+        </g>
+        <!-- Pneumatic -->
+        <g transform="translate(190,20)">
+          <rect x="5" y="5" width="70" height="50" rx="5" fill="rgba(255,107,53,0.08)" stroke="#ff6b35" stroke-width="1.5" opacity="0.8"/>
+          <text x="40" y="25" text-anchor="middle" font-family="monospace" font-size="8" fill="#ff8c5a" opacity="0.9">PNEUMATIC</text>
+          <rect x="15" y="28" width="50" height="18" rx="8" fill="none" stroke="#ff6b35" stroke-width="1.2" opacity="0.7"/>
+          <circle cx="32" cy="37" r="5" fill="#ff6b35" opacity="0.3">
+            <animate attributeName="cx" values="32;48;32" dur="1.5s" repeatCount="indefinite"/>
+          </circle>
+          <text x="40" y="73" text-anchor="middle" font-family="monospace" font-size="7" fill="#ff8c5a" opacity="0.7">Compressed air</text>
+          <text x="40" y="83" text-anchor="middle" font-family="monospace" font-size="7" fill="#7a8ba3">Fast & clean</text>
+        </g>
+        <!-- Bottom section -->
+        <rect x="10" y="100" width="260" height="68" rx="6" fill="rgba(123,94,167,0.05)" stroke="rgba(123,94,167,0.15)" stroke-width="1"/>
+        <text x="140" y="116" text-anchor="middle" font-family="monospace" font-size="8" fill="#b39ddb" opacity="0.9">MOTOR SELECTION FACTORS</text>
+        <text x="20" y="132" font-family="monospace" font-size="7.5" fill="#7a8ba3">Torque  ·  Speed  ·  Accuracy  ·  Power</text>
+        <text x="20" y="147" font-family="monospace" font-size="7.5" fill="#7a8ba3">Size  ·  Environment  ·  Cost  ·  Control</text>
+        <text x="20" y="162" font-family="monospace" font-size="7.5" fill="#b39ddb" opacity="0.7">→ Servo motor: best overall for robots</text>
+      </svg>
+    </div>
+
+    <div class="diagram-card reveal">
+      <div class="diagram-title">Gripper Types</div>
+      <svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" style="height:180px">
+        <!-- Mechanical gripper -->
+        <g transform="translate(15,15)">
+          <rect x="20" y="0" width="15" height="50" rx="3" fill="none" stroke="#b39ddb" stroke-width="1.5" opacity="0.8"/>
+          <rect x="0" y="25" width="22" height="10" rx="3" fill="none" stroke="#b39ddb" stroke-width="1.5" opacity="0.7">
+            <animate attributeName="x" values="0;-6;0" dur="2s" repeatCount="indefinite"/>
+          </rect>
+          <rect x="35" y="25" width="22" height="10" rx="3" fill="none" stroke="#b39ddb" stroke-width="1.5" opacity="0.7">
+            <animate attributeName="x" values="35;41;35" dur="2s" repeatCount="indefinite"/>
+          </rect>
+          <text x="28" y="68" text-anchor="middle" font-family="monospace" font-size="7.5" fill="#b39ddb">Mechanical</text>
+        </g>
+        <!-- Vacuum -->
+        <g transform="translate(85,15)">
+          <rect x="15" y="0" width="25" height="30" rx="4" fill="none" stroke="#00e5ff" stroke-width="1.5" opacity="0.8"/>
+          <ellipse cx="27" cy="38" rx="20" ry="10" fill="none" stroke="#00e5ff" stroke-width="1.5" opacity="0.7"/>
+          <ellipse cx="27" cy="38" rx="12" ry="6" fill="none" stroke="#00e5ff" stroke-width="1" opacity="0.4"/>
+          <text x="27" y="68" text-anchor="middle" font-family="monospace" font-size="7.5" fill="#00e5ff">Vacuum</text>
+        </g>
+        <!-- Magnetic -->
+        <g transform="translate(155,15)">
+          <rect x="5" y="5" width="40" height="35" rx="5" fill="rgba(255,209,102,0.1)" stroke="#ffd166" stroke-width="1.5" opacity="0.8"/>
+          <text x="25" y="26" text-anchor="middle" font-family="monospace" font-size="10" fill="#ffd166" opacity="0.8">N</text>
+          <text x="25" y="37" text-anchor="middle" font-family="monospace" font-size="8" fill="#ffd166" opacity="0.5">S</text>
+          <path d="M5,20 Q-15,20 -15,45" fill="none" stroke="#ffd166" stroke-width="1" stroke-dasharray="3,2" opacity="0.4"/>
+          <path d="M45,20 Q65,20 65,45" fill="none" stroke="#ffd166" stroke-width="1" stroke-dasharray="3,2" opacity="0.4"/>
+          <text x="25" y="68" text-anchor="middle" font-family="monospace" font-size="7.5" fill="#ffd166">Magnetic</text>
+        </g>
+        <!-- Soft -->
+        <g transform="translate(220,15)">
+          <path d="M5,45 Q0,25 15,10 Q25,2 35,10 Q50,25 45,45 Z" fill="rgba(93,202,165,0.15)" stroke="#5dcaa5" stroke-width="1.5" opacity="0.8"/>
+          <text x="25" y="68" text-anchor="middle" font-family="monospace" font-size="7.5" fill="#5dcaa5">Soft</text>
+        </g>
+        <!-- Gripper design factors -->
+        <rect x="10" y="85" width="260" height="85" rx="6" fill="rgba(123,94,167,0.05)" stroke="rgba(123,94,167,0.15)" stroke-width="1"/>
+        <text x="140" y="100" text-anchor="middle" font-family="monospace" font-size="8" fill="#b39ddb" opacity="0.9">GRIPPER DESIGN FACTORS</text>
+        <text x="20" y="116" font-family="monospace" font-size="7.5" fill="#7a8ba3">① Object shape &amp; size</text>
+        <text x="20" y="130" font-family="monospace" font-size="7.5" fill="#7a8ba3">② Weight → gripping force</text>
+        <text x="20" y="144" font-family="monospace" font-size="7.5" fill="#7a8ba3">③ Material &amp; surface texture</text>
+        <text x="145" y="116" font-family="monospace" font-size="7.5" fill="#7a8ba3">④ Speed of operation</text>
+        <text x="145" y="130" font-family="monospace" font-size="7.5" fill="#7a8ba3">⑤ Environment type</text>
+        <text x="145" y="144" font-family="monospace" font-size="7.5" fill="#7a8ba3">⑥ Clean room / food?</text>
+        <text x="20" y="162" font-family="monospace" font-size="7.5" fill="#b39ddb" opacity="0.7">→ No damage, secure hold, reliable release</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="qa-list" id="qa-u2"></div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ========== UNIT 3 ========== -->
+<section id="unit3" class="unit-section reveal">
+  <div class="unit-header">
+    <div class="unit-icon i3">📡</div>
+    <div class="unit-meta">
+      <h2>Unit 3: Sensors &amp; Control</h2>
+      <p>7 questions · Sensor types, vision, signal conditioning, open/closed loop</p>
+    </div>
+  </div>
+
+  <div class="diagram-grid" style="margin-bottom:2rem">
+    <div class="diagram-card reveal">
+      <div class="diagram-title">Sensor Classification Tree</div>
+      <svg viewBox="0 0 280 200" xmlns="http://www.w3.org/2000/svg" style="height:200px">
+        <rect x="90" y="5" width="100" height="24" rx="4" fill="rgba(255,107,53,0.12)" stroke="#ff6b35" stroke-width="1.5" opacity="0.8"/>
+        <text x="140" y="21" text-anchor="middle" font-family="monospace" font-size="8.5" fill="#ff8c5a" font-weight="bold">SENSORS</text>
+        <line x1="140" y1="29" x2="140" y2="45" stroke="rgba(255,107,53,0.4)" stroke-width="1"/>
+        <line x1="65" y1="45" x2="215" y2="45" stroke="rgba(255,107,53,0.4)" stroke-width="1"/>
+        <line x1="65" y1="45" x2="65" y2="58" stroke="rgba(255,107,53,0.4)" stroke-width="1"/>
+        <line x1="215" y1="45" x2="215" y2="58" stroke="rgba(255,107,53,0.4)" stroke-width="1"/>
+        <!-- Internal -->
+        <rect x="10" y="58" width="110" height="22" rx="4" fill="rgba(0,229,255,0.08)" stroke="#00e5ff" stroke-width="1.2" opacity="0.8"/>
+        <text x="65" y="73" text-anchor="middle" font-family="monospace" font-size="8" fill="#00e5ff">Internal (Proprio)</text>
+        <!-- External -->
+        <rect x="160" y="58" width="110" height="22" rx="4" fill="rgba(123,94,167,0.1)" stroke="#7b5ea7" stroke-width="1.2" opacity="0.8"/>
+        <text x="215" y="73" text-anchor="middle" font-family="monospace" font-size="8" fill="#b39ddb">External (Extero)</text>
+        <!-- Internal children -->
+        <line x1="65" y1="80" x2="65" y2="92" stroke="rgba(0,229,255,0.3)" stroke-width="1"/>
+        <text x="65" y="103" text-anchor="middle" font-family="monospace" font-size="7" fill="#7a8ba3">Encoder</text>
+        <text x="65" y="115" text-anchor="middle" font-family="monospace" font-size="7" fill="#7a8ba3">Potentiometer</text>
+        <text x="65" y="127" text-anchor="middle" font-family="monospace" font-size="7" fill="#7a8ba3">Tachometer</text>
+        <text x="65" y="139" text-anchor="middle" font-family="monospace" font-size="7" fill="#7a8ba3">Accelerometer</text>
+        <text x="65" y="151" text-anchor="middle" font-family="monospace" font-size="7" fill="#7a8ba3">Gyroscope</text>
+        <text x="65" y="163" text-anchor="middle" font-family="monospace" font-size="7" fill="#7a8ba3">Force/Torque</text>
+        <!-- External children -->
+        <line x1="215" y1="80" x2="215" y2="92" stroke="rgba(123,94,167,0.3)" stroke-width="1"/>
+        <text x="215" y="103" text-anchor="middle" font-family="monospace" font-size="7" fill="#7a8ba3">Camera/Vision</text>
+        <text x="215" y="115" text-anchor="middle" font-family="monospace" font-size="7" fill="#7a8ba3">Ultrasonic</text>
+        <text x="215" y="127" text-anchor="middle" font-family="monospace" font-size="7" fill="#7a8ba3">Infrared (IR)</text>
+        <text x="215" y="139" text-anchor="middle" font-family="monospace" font-size="7" fill="#7a8ba3">LIDAR</text>
+        <text x="215" y="151" text-anchor="middle" font-family="monospace" font-size="7" fill="#7a8ba3">Tactile</text>
+        <text x="215" y="163" text-anchor="middle" font-family="monospace" font-size="7" fill="#7a8ba3">Proximity</text>
+        <rect x="10" y="175" width="260" height="18" rx="3" fill="rgba(255,107,53,0.07)"/>
+        <text x="140" y="188" text-anchor="middle" font-family="monospace" font-size="7.5" fill="#ff8c5a" opacity="0.8">Internal = robot state  ·  External = environment</text>
+      </svg>
+    </div>
+
+    <div class="diagram-card reveal">
+      <div class="diagram-title">Open-Loop vs Closed-Loop Control</div>
+      <svg viewBox="0 0 280 200" xmlns="http://www.w3.org/2000/svg" style="height:200px">
+        <!-- Open loop -->
+        <text x="10" y="18" font-family="monospace" font-size="8" fill="#7a8ba3">OPEN LOOP (No Feedback)</text>
+        <rect x="10" y="24" width="55" height="22" rx="3" fill="rgba(0,229,255,0.08)" stroke="#00e5ff" stroke-width="1" opacity="0.7"/>
+        <text x="37" y="38" text-anchor="middle" font-family="monospace" font-size="7.5" fill="#00e5ff">Input</text>
+        <line x1="65" y1="35" x2="85" y2="35" stroke="#00e5ff" stroke-width="1.2" opacity="0.6" marker-end="url(#arr1)"/>
+        <rect x="85" y="24" width="65" height="22" rx="3" fill="rgba(0,229,255,0.08)" stroke="#00e5ff" stroke-width="1" opacity="0.7"/>
+        <text x="117" y="38" text-anchor="middle" font-family="monospace" font-size="7.5" fill="#00e5ff">Controller</text>
+        <line x1="150" y1="35" x2="168" y2="35" stroke="#00e5ff" stroke-width="1.2" opacity="0.6"/>
+        <rect x="168" y="24" width="60" height="22" rx="3" fill="rgba(0,229,255,0.08)" stroke="#00e5ff" stroke-width="1" opacity="0.7"/>
+        <text x="198" y="38" text-anchor="middle" font-family="monospace" font-size="7.5" fill="#00e5ff">Output</text>
+        <line x1="228" y1="35" x2="265" y2="35" stroke="#00e5ff" stroke-width="1.2" opacity="0.6"/>
+        <text x="140" y="63" text-anchor="middle" font-family="monospace" font-size="7" fill="#7a8ba3">Simple · No sensor · Less accurate · Cheap</text>
+        <text x="140" y="75" text-anchor="middle" font-family="monospace" font-size="7" fill="#7a8ba3">Example: Stepper motor without encoder</text>
+
+        <line x1="10" y1="90" x2="265" y2="90" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+
+        <!-- Closed loop -->
+        <text x="10" y="107" font-family="monospace" font-size="8" fill="#7a8ba3">CLOSED LOOP (With Feedback)</text>
+        <rect x="8" y="113" width="50" height="22" rx="3" fill="rgba(123,94,167,0.12)" stroke="#7b5ea7" stroke-width="1" opacity="0.8"/>
+        <text x="33" y="127" text-anchor="middle" font-family="monospace" font-size="7.5" fill="#b39ddb">Desired</text>
+        <line x1="58" y1="124" x2="72" y2="124" stroke="#7b5ea7" stroke-width="1.2" opacity="0.7"/>
+        <circle cx="78" cy="124" r="6" fill="none" stroke="#7b5ea7" stroke-width="1.2" opacity="0.8"/>
+        <text x="78" y="127.5" text-anchor="middle" font-family="monospace" font-size="8" fill="#b39ddb">Σ</text>
+        <line x1="84" y1="124" x2="98" y2="124" stroke="#7b5ea7" stroke-width="1.2" opacity="0.7"/>
+        <rect x="98" y="113" width="55" height="22" rx="3" fill="rgba(123,94,167,0.12)" stroke="#7b5ea7" stroke-width="1" opacity="0.7"/>
+        <text x="125" y="127" text-anchor="middle" font-family="monospace" font-size="7.5" fill="#b39ddb">Controller</text>
+        <line x1="153" y1="124" x2="166" y2="124" stroke="#7b5ea7" stroke-width="1.2" opacity="0.7"/>
+        <rect x="166" y="113" width="50" height="22" rx="3" fill="rgba(123,94,167,0.12)" stroke="#7b5ea7" stroke-width="1" opacity="0.7"/>
+        <text x="191" y="127" text-anchor="middle" font-family="monospace" font-size="7.5" fill="#b39ddb">Actuator</text>
+        <line x1="216" y1="124" x2="230" y2="124" stroke="#7b5ea7" stroke-width="1.2" opacity="0.7"/>
+        <rect x="230" y="113" width="42" height="22" rx="3" fill="rgba(123,94,167,0.12)" stroke="#7b5ea7" stroke-width="1" opacity="0.7"/>
+        <text x="251" y="127" text-anchor="middle" font-family="monospace" font-size="7.5" fill="#b39ddb">Output</text>
+        <!-- Feedback arrow -->
+        <path d="M251,135 L251,160 L78,160 L78,130" fill="none" stroke="#ff8c5a" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.7">
+          <animate attributeName="stroke-dashoffset" values="20;0" dur="2s" repeatCount="indefinite"/>
+        </path>
+        <rect x="135" y="153" width="50" height="14" rx="3" fill="rgba(255,107,53,0.12)"/>
+        <text x="160" y="163" text-anchor="middle" font-family="monospace" font-size="7" fill="#ff8c5a">Sensor feedback</text>
+        <text x="140" y="182" text-anchor="middle" font-family="monospace" font-size="7" fill="#7a8ba3">Accurate · Uses encoder · Error correction</text>
+        <text x="140" y="194" text-anchor="middle" font-family="monospace" font-size="7" fill="#b39ddb" opacity="0.8">★ Preferred in industrial robots</text>
+        <defs><marker id="arr1" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#00e5ff" opacity="0.6"/></marker></defs>
+      </svg>
+    </div>
+  </div>
+
+  <div class="qa-list" id="qa-u3"></div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Comparison Table -->
+<section id="compare" class="compare-section reveal">
+  <div class="section-label">Quick Reference</div>
+  <h2 class="section-title" style="font-family:'Syne',sans-serif;font-weight:800">Actuator Comparison Table</h2>
+  <p style="color:var(--muted);margin-bottom:2rem;font-size:0.9rem">Most commonly asked in 5-mark questions</p>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th class="col1">Electric</th>
+        <th class="col2">Hydraulic</th>
+        <th class="col3">Pneumatic</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Power/Force</td><td>Medium</td><td>Very High</td><td>Low–Medium</td></tr>
+      <tr><td>Precision</td><td>High ★</td><td>Medium</td><td>Low</td></tr>
+      <tr><td>Speed</td><td>Medium</td><td>Medium</td><td>Fast ★</td></tr>
+      <tr><td>Cost</td><td>Medium</td><td>High</td><td>Low ★</td></tr>
+      <tr><td>Maintenance</td><td>Low</td><td>High</td><td>Medium</td></tr>
+      <tr><td>Cleanliness</td><td>Clean ★</td><td>Leakage risk</td><td>Clean ★</td></tr>
+      <tr><td>Control</td><td>Easy (digital)</td><td>Complex</td><td>Simple</td></tr>
+      <tr><td>Best Use</td><td>General robots</td><td>Heavy industry</td><td>Pick & place</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<div class="divider"></div>
+
+<!-- Key legend -->
+<div class="key-section reveal">
+  <div class="key-item"><div class="key-dot" style="background:#ff8c5a"></div><span>Important — High exam chance</span></div>
+  <div class="key-item"><div class="key-dot" style="background:#00e5ff"></div><span>Definition — Learn exact meaning</span></div>
+  <div class="key-item"><div class="key-dot" style="background:#b39ddb"></div><span>Explanation — Descriptive answer</span></div>
+  <div class="key-item" style="margin-left:auto"><span style="font-family:'Space Mono',monospace;font-size:0.75rem;color:var(--muted)">BE04041011 · GTU</span></div>
+</div>
+
+<footer>
+  <p>Elements of Robots & Kinematics · BE04041011 · GTU Robotics & Automation · Study Guide</p>
+</footer>
+
+<script>
+// Cursor
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cursor.style.left=mx+'px';cursor.style.top=my+'px'});
+function animRing(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing)}
+animRing();
+document.querySelectorAll('a,button,.chapter-card,.qa-q').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cursor.style.width='20px';cursor.style.height='20px';ring.style.width='50px';ring.style.height='50px';ring.style.opacity='0.3'});
+  el.addEventListener('mouseleave',()=>{cursor.style.width='12px';cursor.style.height='12px';ring.style.width='36px';ring.style.height='36px';ring.style.opacity='0.5'});
+});
+
+// Stars
+const starsEl=document.getElementById('stars');
+for(let i=0;i<120;i++){
+  const s=document.createElement('div');
+  s.className='star';
+  const size=Math.random()*2.5+0.5;
+  s.style.cssText=`width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;--delay:${Math.random()*5}s`;
+  starsEl.appendChild(s);
+}
+
+// Particles
+for(let i=0;i<8;i++){
+  const p=document.createElement('div');
+  p.className='particle';
+  p.style.cssText=`left:${Math.random()*100}%;animation-duration:${8+Math.random()*12}s;animation-delay:${Math.random()*8}s;--dx:${(Math.random()-0.5)*200}px`;
+  document.body.appendChild(p);
+}
+
+// Progress bar
+window.addEventListener('scroll',()=>{
+  const h=document.body.scrollHeight-window.innerHeight;
+  document.getElementById('progressBar').style.width=(window.scrollY/h*100)+'%';
+});
+
+// Scroll reveal
+const reveals=document.querySelectorAll('.reveal');
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}});
+},{threshold:0.1});
+reveals.forEach(r=>obs.observe(r));
+
+// Chapter nav scroll
+function scrollTo(id,btn){
+  document.getElementById(id).scrollIntoView({behavior:'smooth'});
+  document.querySelectorAll('.ch-nav-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// Q&A Data
+const qdata = {
+  u1:[
+    {q:"What is a robot?",tag:"def",a:"A robot is a programmable, multifunctional mechanical device that can sense, think, and act. It can perform tasks automatically, either autonomously or under human control.<br><br><b>Key formula:</b> Robot = Sense + Process + Act<br><b>Remember:</b> Programmable + Multifunctional + Can work in hazardous environments."},
+    {q:"Define Robotics.",tag:"def",a:"Robotics is the branch of science and technology concerned with the design, construction, operation, and application of robots. It combines Mechanical + Electrical + Computer Science engineering.<br><br><b>Simple definition:</b> The science of building and using robots."},
+    {q:"Classify robots based on structure.",tag:"imp",a:"<b>1. Cartesian:</b> X, Y, Z linear motion. Simple, accurate. Used in gantry robots.<br><b>2. Cylindrical:</b> Rotary base + linear arm. Good for pick & place.<br><b>3. Spherical (Polar):</b> 2 rotary + 1 linear. Large workspace.<br><b>4. SCARA:</b> Horizontal arm. Very fast assembly robot.<br><b>5. Articulated:</b> All rotary joints like human arm. Most flexible — most common!<br><b>6. Delta (Parallel):</b> Parallel links, extremely fast. Food/pharmaceutical industry."},
+    {q:"What are the advantages of robots?",tag:"exp",a:"1. High speed and productivity<br>2. Consistent accuracy — no human error<br>3. Can work in hazardous/toxic/extreme environments<br>4. No fatigue — works 24/7<br>5. Cost-effective in the long run<br>6. Higher safety for dangerous tasks<br>7. Tasks needing very high precision"},
+    {q:"What are the disadvantages of robots?",tag:"exp",a:"1. High initial purchase and setup cost<br>2. Job displacement / unemployment<br>3. Needs skilled technicians for maintenance<br>4. Cannot adapt to sudden unplanned changes<br>5. Limited sensory ability vs humans<br>6. One breakdown halts entire production<br>7. Cannot make complex ethical decisions"},
+    {q:"Explain the main components of a robot.",tag:"imp",a:"A robot has <b>6 main components:</b><br><b>1. Mechanical Structure</b> — Links and joints; the physical body<br><b>2. Actuators</b> — Motors/cylinders that create motion<br><b>3. Sensors</b> — Detect environment (position, force, vision)<br><b>4. Controller</b> — The brain; processes data and commands actuators<br><b>5. End Effector (Gripper/Tool)</b> — Performs the final task<br><b>6. Power Supply</b> — Energy source (electric / hydraulic / pneumatic)"},
+    {q:"What is Degree of Freedom (DOF)?",tag:"def",a:"DOF is the number of independent motions a robot can perform.<br><br>Each joint = 1 DOF. A complete spatial position needs 6 DOF:<br>• 3 DOF for Position (X, Y, Z)<br>• 3 DOF for Orientation (Roll, Pitch, Yaw)<br><br><b>Example:</b> Industrial robot arm = 6 DOF. Human arm ≈ 7 DOF."},
+    {q:"Explain different types of robot joints.",tag:"imp",a:"<b>1. Revolute (R):</b> Rotates around an axis like an elbow. 1 DOF. Most common!<br><b>2. Prismatic (P):</b> Slides linearly along axis. 1 DOF.<br><b>3. Spherical/Ball:</b> Rotation in 3 directions. 3 DOF.<br><b>4. Cylindrical:</b> Rotation + linear motion. 2 DOF.<br><b>5. Screw/Helical:</b> Rotate and translate simultaneously. 1 DOF.<br><b>6. Planar:</b> Moves in a 2D plane. 2 DOF.<br><br><b>Most used in robots: R (Revolute) and P (Prismatic)</b>"},
+    {q:"What are different robot coordinate systems?",tag:"imp",a:"<b>1. Cartesian (Rectangular):</b> X, Y, Z linear axes. Simple math. Gantry robots.<br><b>2. Cylindrical:</b> r (radius), θ (angle), z (height). Rotating base robots.<br><b>3. Spherical (Polar):</b> r, θ, φ angles. Spherical workspace.<br><b>4. Articulated (Joint):</b> Defined by joint angles. Most common in industrial robots."},
+    {q:"Define robot workspace.",tag:"def",a:"Workspace (work envelope) = the total volume of space that a robot's end effector can reach.<br><br><b>Two types:</b><br>• <b>Reachable workspace:</b> All positions end effector can reach in at least one orientation<br>• <b>Dexterous workspace:</b> Positions where end effector can reach in ALL orientations<br><br>Depends on: joint types, link lengths, and joint limits."},
+    {q:"Differentiate between accuracy, precision, and repeatability.",tag:"imp",a:"<b>Accuracy:</b> How close the robot reaches the commanded/desired position.<br><b>Precision:</b> The smallest increment of movement (resolution).<br><b>Repeatability:</b> Ability to return to the SAME position consistently.<br><br><b>Analogy:</b><br>• Accuracy = Hitting the correct target<br>• Repeatability = Hitting the same spot every time (even if wrong target)<br><br><b>In manufacturing: Repeatability is most important!</b>"},
+    {q:"What are robot programming modes?",tag:"exp",a:"<b>1. Lead-through / Teach-pendant:</b> Guide robot manually, record positions<br><b>2. Walk-through:</b> Physically move robot arm, record full path<br><b>3. Off-line programming:</b> Write code on computer, simulate, then upload — most common today<br><b>4. Online programming:</b> Program while robot is connected live<br><b>5. Task-level programming:</b> Give high-level commands — robot decides how to do it"},
+    {q:"List various applications of robots.",tag:"exp",a:"<b>Industrial:</b> Welding, painting, assembly, material handling, packaging<br><b>Medical:</b> Surgery (da Vinci robot), rehabilitation, lab automation<br><b>Military:</b> Bomb disposal, surveillance drones<br><b>Space:</b> Mars rovers, satellite maintenance<br><b>Agriculture:</b> Harvesting, spraying pesticides<br><b>Service:</b> Cleaning (Roomba), hotel service robots<br><b>Underwater:</b> Deep-sea exploration<br><b>Hazardous:</b> Nuclear plant inspection and maintenance"},
+    {q:"What is a serial manipulator?",tag:"def",a:"A serial manipulator is a robot where links are connected in series (one after another):<br>Base → Link1 → Link2 → ... → End Effector<br><br><b>Characteristics:</b><br>• Large workspace<br>• Simpler kinematics<br>• Less rigid than parallel robots<br>• Each joint must support all links after it<br><br><b>Examples:</b> PUMA robot, KUKA 6-DOF arm, human arm. Most industrial robots are serial manipulators."},
+    {q:"Explain social issues related to robots.",tag:"exp",a:"<b>1. Unemployment:</b> Robots replace workers in factories — job losses<br><b>2. Privacy concerns:</b> Surveillance robots and drones<br><b>3. Safety:</b> Robot malfunction can injure humans<br><b>4. Ethical issues:</b> Autonomous weapons — who decides to use force?<br><b>5. Economic inequality:</b> Companies profit, unskilled workers lose<br><b>6. Over-dependency:</b> Society relies too heavily on automated systems<br><b>7. Legal liability:</b> Who is responsible if a robot causes harm?"},
+  ],
+  u2:[
+    {q:"What are electric actuators?",tag:"def",a:"Electric actuators convert electrical energy into mechanical motion. Most common in robots today.<br><br><b>Types:</b><br><b>1. DC Motor:</b> Simple speed control, small robots<br><b>2. AC Motor:</b> Heavy industrial use<br><b>3. Stepper Motor:</b> Precise position control, fixed steps, open-loop<br><b>4. Servo Motor:</b> Closed-loop, high accuracy — best for robots!<br><b>5. Linear Motor:</b> Direct linear motion without gears<br><br><b>Advantages:</b> Clean, precise, easy digital control, low maintenance."},
+    {q:"What are hydraulic actuators?",tag:"def",a:"Hydraulic actuators use pressurized fluid (oil) to produce mechanical motion.<br><br><b>Types:</b> Hydraulic cylinders (linear), Hydraulic motors (rotary)<br><br><b>Advantages:</b> Very high force/torque, smooth motion, good for heavy loads<br><b>Disadvantages:</b> Oil leakage risk, high maintenance, NOT for clean rooms<br><br><b>Used in:</b> Heavy industrial robots, construction equipment, underwater robots, flight simulators"},
+    {q:"What are pneumatic actuators?",tag:"def",a:"Pneumatic actuators use compressed air to create motion.<br><br><b>Types:</b> Air cylinders, rotary actuators, air motors<br><br><b>Advantages:</b> Fast, very clean, low cost, safe in explosive environments<br><b>Disadvantages:</b> Less precise (air is compressible), lower force than hydraulic<br><br><b>Used in:</b> Fast pick-and-place, food industry, packaging, gripping tasks"},
+    {q:"Compare electric, hydraulic, and pneumatic actuators.",tag:"imp",a:"<table><tr><th>Feature</th><th>Electric</th><th>Hydraulic</th><th>Pneumatic</th></tr><tr><td>Force</td><td>Medium</td><td>Very High</td><td>Low-Medium</td></tr><tr><td>Precision</td><td>High</td><td>Medium</td><td>Low</td></tr><tr><td>Speed</td><td>Medium</td><td>Medium</td><td>Fast</td></tr><tr><td>Clean?</td><td>Yes</td><td>Leakage</td><td>Yes</td></tr><tr><td>Cost</td><td>Medium</td><td>High</td><td>Low</td></tr><tr><td>Best for</td><td>General robots</td><td>Heavy robots</td><td>Pick & place</td></tr></table>"},
+    {q:"What factors affect the selection of motors?",tag:"exp",a:"<b>1. Load/Torque requirement:</b> How much force is needed<br><b>2. Speed requirement:</b> How fast the joint must move<br><b>3. Accuracy & resolution:</b> Stepper vs servo<br><b>4. Power source:</b> AC, DC, battery, or solar<br><b>5. Size and weight constraints:</b> Especially in mobile robots<br><b>6. Operating environment:</b> Clean room, outdoor, hazardous, food-grade<br><b>7. Budget:</b> Cost of motor + controller<br><b>8. Control type needed:</b> Open-loop or closed-loop"},
+    {q:"What is a gripper?",tag:"def",a:"A gripper is the end effector of a robot — it physically grips, holds, and manipulates objects. It is the robot's 'hand'.<br><br>Grippers must hold objects securely without damaging them, and release on command.<br><br>Selection depends on object shape, size, weight, material, and task speed."},
+    {q:"Explain different types of grippers.",tag:"imp",a:"<b>1. Mechanical/Claw grippers:</b> Use fingers/jaws to grasp. Most common. 2 or 3-finger designs.<br><b>2. Vacuum grippers:</b> Suction cups. Perfect for flat, smooth surfaces (glass, boxes, sheets).<br><b>3. Magnetic grippers:</b> Electromagnets. Only works with ferromagnetic metals.<br><b>4. Pneumatic grippers:</b> Air-powered fingers. Fast and clean for food/pharma.<br><b>5. Adhesive grippers:</b> Sticky surfaces. For small, very light delicate objects.<br><b>6. Soft grippers:</b> Flexible rubber/silicone. For delicate objects — food, medical, biological."},
+    {q:"What factors should be considered in gripper design?",tag:"exp",a:"<b>1. Object shape & size</b> — regular/irregular geometry<br><b>2. Object weight</b> — determines required gripping force<br><b>3. Surface texture</b> — smooth, rough, sticky, fragile<br><b>4. Material type</b> — metal, plastic, food, living tissue<br><b>5. Gripping force</b> — enough to hold but not damage<br><b>6. Operation speed</b> — fast pick-and-place or slow precision<br><b>7. Environment</b> — clean room, high temperature, food-grade<br><b>8. Number of cycles</b> — durability requirement"},
+  ],
+  u3:[
+    {q:"Classify sensors used in robotics.",tag:"imp",a:"<b>1. Internal Sensors (Proprioceptive)</b> — monitor robot's own state:<br>• Encoders, Potentiometers (position)<br>• Tachometers (velocity)<br>• Accelerometers, Gyroscopes (motion/orientation)<br>• Force/Torque sensors<br><br><b>2. External Sensors (Exteroceptive)</b> — monitor environment:<br>• Cameras/Vision sensors<br>• Proximity sensors (IR, ultrasonic, laser)<br>• Tactile sensors (touch)<br>• LIDAR (3D mapping)<br>• Temperature sensors<br><br><b>Key rule:</b> Internal = robot state, External = environment state"},
+    {q:"What are internal sensors?",tag:"def",a:"Internal sensors measure the robot's own state — they provide feedback about what the robot is actually doing.<br><br><b>Examples:</b><br><b>1. Encoder:</b> Measures joint angle/position (optical or magnetic). Most common!<br><b>2. Potentiometer:</b> Measures angular or linear position<br><b>3. Tachometer:</b> Measures rotational speed/velocity<br><b>4. Accelerometer:</b> Measures linear acceleration<br><b>5. Gyroscope:</b> Measures orientation and angular rotation<br><b>6. Force/Torque sensor:</b> Measures applied force at joint or wrist"},
+    {q:"What are external sensors?",tag:"def",a:"External sensors detect information about the environment surrounding the robot.<br><br><b>Examples:</b><br><b>1. Camera/Vision sensor:</b> Captures images for inspection, navigation, sorting<br><b>2. Proximity sensor:</b> Detects nearby objects without contact<br><b>3. Ultrasonic sensor:</b> Measures distance using sound waves (like SONAR)<br><b>4. Infrared (IR) sensor:</b> Detects objects or heat radiation<br><b>5. LIDAR:</b> 3D mapping of environment using laser<br><b>6. Tactile sensor:</b> Detects touch and pressure<br><b>7. Temperature sensor:</b> Measures environment temperature"},
+    {q:"What is a robot vision system?",tag:"imp",a:"A robot vision system allows robots to 'see' and interpret their environment using cameras and image processing software.<br><br><b>Main components:</b><br><b>1. Camera/Image sensor</b> — captures the image<br><b>2. Lighting system</b> — illuminates the scene properly<br><b>3. Image processor (hardware)</b> — fast processing chip<br><b>4. Software</b> — detects objects, edges, shapes, colors<br><br><b>Applications:</b> Quality inspection, bin picking, navigation, face recognition, barcode reading<br><br><b>Types:</b><br>• 2D vision — flat images (most common)<br>• 3D vision — depth sensing using stereo cameras or structured light"},
+    {q:"Explain signal conditioning.",tag:"def",a:"Signal conditioning is processing raw sensor signals to make them suitable for the robot controller.<br><br><b>Operations performed:</b><br><b>1. Amplification:</b> Boost weak sensor signals to usable levels<br><b>2. Filtering:</b> Remove electrical noise from signals<br><b>3. ADC (Analog-to-Digital Conversion):</b> Convert analog signal to digital for microcontroller<br><b>4. Isolation:</b> Protect controller from high voltage/current<br><b>5. Linearization:</b> Correct non-linear sensor output<br><br><b>Purpose:</b> Ensures accurate, clean, compatible data reaches the robot controller."},
+    {q:"What is a robot controller?",tag:"def",a:"A robot controller is the 'brain' of the robot — it receives sensor data, executes the program, and sends commands to actuators.<br><br><b>Functions:</b><br>1. Receive and process sensor feedback<br>2. Execute robot program instructions<br>3. Compute kinematics and motion trajectories<br>4. Send drive signals to motors/actuators<br>5. Monitor safety limits<br><br><b>Types:</b> PLC-based, PC-based, microcontroller-based, dedicated (KUKA KRC, FANUC R-30iB)"},
+    {q:"Explain open-loop and closed-loop control systems.",tag:"imp",a:"<b>Open-Loop Control:</b><br>• No feedback sensor used<br>• Controller sends command and assumes it was executed correctly<br>• Simple, low cost, less accurate<br>• Example: Stepper motor without encoder, washing machine timer<br><br><b>Closed-Loop Control:</b><br>• Uses feedback from sensors to compare actual vs desired position<br>• Controller corrects error continuously<br>• More accurate, more complex, higher cost<br>• Example: Servo motor with encoder — if position is wrong, controller adjusts output<br><br><b>★ Closed-loop control is preferred in robotics for precise tasks!</b>"},
+  ]
+};
+
+function renderQA(unitId, containerId){
+  const cont = document.getElementById(containerId);
+  const items = qdata[unitId];
+  cont.innerHTML = items.map((item, i) => `
+    <div class="qa-item" id="${containerId}-${i}">
+      <div class="qa-q" onclick="toggleQ('${containerId}-${i}')">
+        <span class="qa-num">Q${String(i+1).padStart(2,'0')}</span>
+        <span class="qa-text">${item.q}</span>
+        <span class="qa-badge badge-${item.tag}">${item.tag==='imp'?'Important':item.tag==='def'?'Definition':'Explanation'}</span>
+        <span class="qa-arrow" id="arr-${containerId}-${i}">▼</span>
+      </div>
+      <div class="qa-answer" id="ans-${containerId}-${i}">
+        <div class="qa-inner">${item.a}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleQ(id){
+  const ans = document.getElementById('ans-'+id);
+  const arr = document.getElementById('arr-'+id);
+  const isOpen = ans.classList.contains('open');
+  ans.classList.toggle('open', !isOpen);
+  arr.classList.toggle('open', !isOpen);
+}
+
+renderQA('u1','qa-u1');
+renderQA('u2','qa-u2');
+renderQA('u3','qa-u3');
+
+// Active chapter nav on scroll
+const sections=['unit1','unit2','unit3'];
+const navBtns=document.querySelectorAll('.ch-nav-btn');
+window.addEventListener('scroll',()=>{
+  sections.forEach((id,i)=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const rect=el.getBoundingClientRect();
+    if(rect.top<200 && rect.bottom>0){
+      navBtns.forEach(b=>b.classList.remove('active'));
+      if(navBtns[i])navBtns[i].classList.add('active');
+    }
+  });
+});
+</script>
+</body>
+</html>
